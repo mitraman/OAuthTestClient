@@ -314,8 +314,6 @@ public class NanoHTTPD
 			try
 			{
 				
-				// RM: Added a trace variable so I can report on the actual message contents
-				String msgTrace = "";
 				
 				InputStream is = mySocket.getInputStream();
 				if ( is == null) return;
@@ -432,9 +430,8 @@ public class NanoHTTPD
 							postLine += String.valueOf(pbuf, 0, read);
 							read = in.read(pbuf);
 						}
-						postLine = postLine.trim();
-						// RM: For some reason they were decoding post content, I've removed this 'feature'
-						//decodeParms( postLine, parms );
+						postLine = postLine.trim();						
+						decodeParms( postLine, parms );
 					}
 				}
 
