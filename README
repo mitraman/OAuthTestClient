@@ -1,0 +1,35 @@
+OAuthTestClient
+===============
+
+GOALS
+
+   * Provide a simple GUI based test client that will allow OAuth 2.0 users
+     to learn how the protocol works
+   * Provide a non-browser based implementation so that interaction with a 
+     User Agent can be demonstrated
+   * Support all grant types and tokens
+   * Display as much of the OAuth conversatio to the user as possible
+   * Allow the user to modify parameters to try out negative test cases (for 
+     example: requesting a protected resource with an invalid access token.)
+
+
+HISTORY
+
+   I wrote this application for a colleague at Layer 7 Technologies so that he
+   could demonstrate an OAuth flow to a potential customer.  Although it is simple, 
+   I thought it might be useful for others, so I'm sharing it via github.  
+
+
+DEPENDENCIES
+
+    * Java 1.6
+    * An existing OAuth 2.0 service to test against
+
+
+THIRD PARTY CODE
+
+    This package uses the following code libraries:
+
+    * NanoHTTPD (http://elonen.iki.fi/code/nanohttpd/) - Jarno Elonen's embedded
+      HTTP server for Java
+    * The Java based JSON parser provide by JSON.org (http://www.json.org/java/)
