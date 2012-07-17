@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -90,7 +91,7 @@ public String getAccessToken(String url, String client_key, String authorization
 	private String call(String url, String client_key, String client_secret, String urlParams, boolean confidential) throws IOException {
 		
 		URL tokenUrl = new URL(url);
-		HttpsURLConnection conn = (HttpsURLConnection)tokenUrl.openConnection();
+		HttpURLConnection conn = (HttpURLConnection)tokenUrl.openConnection();
 		conn.setDoInput(true);
 		conn.setDoOutput(true);
 		conn.setRequestMethod("POST");

@@ -19,7 +19,9 @@ public class ProtectedResourceSwingClient extends SwingWorker {
 	protected Object doInBackground() throws Exception {
 
 		try {
+			
 			ProtectedResourceClient resClient = new ProtectedResourceClient();
+			System.out.println("Calling resource client");
 			String response = resClient.call(url, bearerToken);
 			MessageLog.getInstance().addMessage(response);
 		} catch( IOException ioe ) {

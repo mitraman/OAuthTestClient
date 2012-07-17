@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -70,7 +71,7 @@ public class ProtectedResourceClient  {
 		
 		
 		URL tokenUrl = new URL(url);
-		HttpsURLConnection conn = (HttpsURLConnection)tokenUrl.openConnection();
+		HttpURLConnection conn = (HttpURLConnection)tokenUrl.openConnection();
 		conn.setDoOutput(true);
 		conn.setRequestMethod("GET");
 		//conn.setRequestProperty("Content-Type","application/x-www-form-urlencoded;charset=UTF-8");

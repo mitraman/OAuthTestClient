@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -78,8 +80,7 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
 		
         // Setup message event listener for status messages
         MessageLog.getInstance().addListener(this);
-
-		
+        		
 		// Start the call back server
 		try {
 			CallBackServer callBackServer = new CallBackServer(8080);
@@ -129,6 +130,10 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
 		ta_status.setWrapStyleWord(true);
 		//TODO: Choose a console style font
 		JScrollPane serverResponseScroller = new JScrollPane(ta_status);
+		serverResponseScroller.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
+			public void adjustmentValueChanged(AdjustmentEvent e) {  
+			e.getAdjustable().setValue(e.getAdjustable().getMaximum());  
+			}});  
 		
 		
 		// Setup the input panel as a CardLayout so we can switch on the fly
@@ -272,8 +277,8 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
 
 @Override
 public void onMessage(String msg, long timeStamp) {
-	ta_status.insert(msg + "\n", 0);
-	//ta_status.append(msg);
+	//ta_status.insert(msg + "\n", 0);
+	ta_status.append(msg + "\n");
 }
 
 @Override
@@ -292,21 +297,6 @@ private void loadUrlData() {
 		ta_serverUrl.setText(OAuthPropertyBean.getInstance().getRequestURL());
 	}
 }
-
-
-/** Returns an ImageIcon, or null if the path was invalid. */
-protected ImageIcon createImageIcon(String path,
-                                           String description) {
-    java.net.URL imgURL = getClass().getResource(path);
-    if (imgURL != null) {
-        return new ImageIcon(imgURL, description);
-    } else {
-        System.err.println("Couldn't find file: " + path);
-        System.out.println("Working directory: " + System.getProperty("user.dir") );
-        return null;
-    }
-}
-
 
 
 
