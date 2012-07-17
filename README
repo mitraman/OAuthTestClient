@@ -1,14 +1,17 @@
 OAuthTestClient
 ===============
 
+The OAuthTestClient is a java based GUI application that acts as an OAuth 
+2.0 "Client".  
+
 GOALS
 
    * Provide a simple GUI based test client that will allow OAuth 2.0 users
-     to learn how the protocol works
+     to learn how an OAuth 2.0 conversation works.
    * Provide a non-browser based implementation so that interaction with a 
-     User Agent can be demonstrated
-   * Support all grant types and tokens
-   * Display as much of the OAuth conversatio to the user as possible
+     User Agent can be demonstrated.
+   * Support all grant types and tokens.
+   * Display as much of the OAuth conversatio to the user as possible.
    * Allow the user to modify parameters to try out negative test cases (for 
      example: requesting a protected resource with an invalid access token.)
 
@@ -25,6 +28,10 @@ DEPENDENCIES
     * Java 1.6
     * An existing OAuth 2.0 service to test against
 
+BINARY
+
+   I've included a runnable jar file in the bin directory, but I can't guarantee
+   that it will always be up to date with the source code.
 
 THIRD PARTY CODE
 
