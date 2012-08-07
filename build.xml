@@ -1,0 +1,24 @@
+<project name="OAuthTestClient" default="run">
+	
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="build/jar"/>
+        <jar destfile="build/jar/OAuthTestClient.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="com.l7.mitra.client.ui.OAuthTestClient"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java jar="build/jar/OAuthTestClient.jar" fork="true"/>
+    </target>
+</project>
