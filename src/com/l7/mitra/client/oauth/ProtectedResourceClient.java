@@ -96,21 +96,5 @@ public class ProtectedResourceClient  {
 	      
 	}
 	
-	public static void main(String args[]) {
-		String bearer_token = "e603b2e4-48ba-445f-9345-5a0c08a47985";
-		String url = "https://192.168.44.129:8443/restroom";
-		
-		ProtectedResourceClient tokenClient = new ProtectedResourceClient();
-		try {
-			System.out.println("Calling...");
-			String response = tokenClient.call(url, bearer_token);
-			System.out.println(response);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Failed.");
-			e.printStackTrace();
-		}
-
-	}
 
 }

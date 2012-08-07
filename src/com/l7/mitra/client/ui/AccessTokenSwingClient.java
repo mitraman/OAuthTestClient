@@ -26,40 +26,51 @@ import com.l7.mitra.client.oauth.AccessTokenClient;
 
 public class AccessTokenSwingClient extends SwingWorker {
 	
-	String url = "";
-	String client_key = "";
-	String client_secret = "";
-	String authorizationCode = "";
-	String redirect_uri = "";
-	String refreshToken= "";
 	int grantType = -1;
-	public static final int REFRESH_TOKEN = 0;
-	public static final int ACCESS_TOKEN = 1;
-
+	
 	public AccessTokenSwingClient(int grantType) {
 		this.grantType = grantType;
 	}
+	
+	public AccessTokenSwingClient() {
+		grantType = OAuthPropertyBean.getInstance().getGrantType();
+	}
+	
+	
 		@Override
 	protected Object doInBackground() throws Exception {
 		AccessTokenClient tokenClient = new AccessTokenClient();
 		String response = "";
+		
+		// Get latest values from OAuthPropertyBean
+		OAuthPropertyBean pBean = OAuthPropertyBean.getInstance();				
+		
 		try {
-			if( grantType == ACCESS_TOKEN) {
-				if( client_secret == null || client_secret.trim().isEmpty()) {
-					response = tokenClient.getAccessToken(url, client_key, authorizationCode, redirect_uri);
-				}else {
-					response = tokenClient.getAccessToken(url, client_key, client_secret, authorizationCode, redirect_uri);	
-				}
-				
+			if( grantType == OAuthPropertyBean.AUTHORIZATION_GRANT) {
+				response = tokenClient.getAccessTokenByAuthorizationGrant(pBean.getAccessURL(), pBean.getClientId(), pBean.getClientSecret(), 
+						pBean.getAuthorizationCode(), pBean.getRedirectUri(), pBean.getScope());	
+			}else if( grantType == OAuthPropertyBean.PASWORD_GRANT) {
+				response = tokenClient.getAccessTokenByResourceCreds(pBean.getAccessURL(), pBean.getClientId(), pBean.getClientSecret(), 
+						pBean.getResUsername(), pBean.getResPassword(), pBean.getScope());
+			}else if( grantType == OAuthPropertyBean.CLIENT_CREDENTIALS_GRANT) {
+				response = tokenClient.getAccessTokenByClientCreds(pBean.getAccessURL(), pBean.getClientId(), pBean.getClientSecret(), pBean.getScope());
+			}else if( grantType == OAuthPropertyBean.REFRESH_GRANT ) {
+				response = tokenClient.refreshAccessToken(pBean.getAccessURL(), pBean.getClientId(), pBean.getClientSecret(), pBean.getRefreshToken(), 
+						pBean.getRedirectUri(), pBean.getScope());
+			}else {
+				throw new Exception("Unknown grantType");
 			}
-			else if( grantType == REFRESH_TOKEN )response = tokenClient.refreshAccessToken(url, client_key, client_secret, refreshToken, redirect_uri);
-			else throw new Exception("Unknown grantType");
+			
 			MessageLog.getInstance().addMessage(response);
 			JSONObject jsonObj = new JSONObject(response.toString());
 			String accessToken = jsonObj.getString("access_token");
-			String refreshToken = jsonObj.getString("refresh_token");		
 			OAuthPropertyBean.getInstance().setAccessToken(accessToken);
-			OAuthPropertyBean.getInstance().setRefreshToken(refreshToken);
+			if( jsonObj.has("refresh_token") ) {
+				String refreshToken = jsonObj.getString("refresh_token");
+				OAuthPropertyBean.getInstance().setRefreshToken(refreshToken);
+			}					
+			
+			
 			
 		}catch (IOException ioe ) {
 			ioe.printStackTrace();

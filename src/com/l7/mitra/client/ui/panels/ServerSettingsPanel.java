@@ -1,4 +1,4 @@
-package com.l7.mitra.client.ui;
+package com.l7.mitra.client.ui.panels;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,7 +15,9 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class ServerSettingsPanel extends JPanel implements
+import com.l7.mitra.client.ui.OAuthPropertyBean;
+
+public class ServerSettingsPanel extends OAuthTestPanel implements
 		PropertyChangeListener, DocumentListener, ActionListener {
 
 	// Labels
@@ -29,6 +31,9 @@ public class ServerSettingsPanel extends JPanel implements
 	public ServerSettingsPanel() {
 		super();
 
+		this.panelDescription = "Server Settings";
+		this.ID = "serversettings";
+		
 		OAuthPropertyBean.getInstance().addChangeListener(this);
 		
 		SpringLayout layout = new SpringLayout();
@@ -64,16 +69,15 @@ public class ServerSettingsPanel extends JPanel implements
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-//		if (evt.getPropertyName().compareTo(
-//				OAuthPropertyBean.AZ_HOST) == 0) {
-//			tf_host.setText(OAuthPropertyBean.getInstance()
-//					.getAzHost());
-//		}else if (evt.getPropertyName().compareTo(
-//				OAuthPropertyBean.AZ_PORT) == 0) {
-//			tf_port.setText(OAuthPropertyBean.getInstance()
-//					.getAzPort());
-//		}
-
+		if( evt.getPropertyName().compareTo(OAuthPropertyBean.AZ_HOST) == 0) {
+			if( ((String)evt.getNewValue()).compareTo(tf_host.getText()) != 0) {
+				tf_host.setText((String)evt.getNewValue());
+			}
+		}else if( evt.getPropertyName().compareTo(OAuthPropertyBean.AZ_PORT) == 0) {
+			if( ((String)evt.getNewValue()).compareTo(tf_port.getText()) != 0) {
+				tf_port.setText((String)evt.getNewValue());
+			}
+		}
 	}
 
 	@Override

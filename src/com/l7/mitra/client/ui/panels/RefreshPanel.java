@@ -1,4 +1,4 @@
-package com.l7.mitra.client.ui;
+package com.l7.mitra.client.ui.panels;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,7 +15,10 @@ import javax.swing.SpringLayout;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class RefreshPanel extends JPanel implements
+import com.l7.mitra.client.ui.AccessTokenSwingClient;
+import com.l7.mitra.client.ui.OAuthPropertyBean;
+
+public class RefreshPanel extends OAuthTestPanel implements
 		PropertyChangeListener, DocumentListener, ActionListener {
 
 	// Labels
@@ -34,6 +37,9 @@ public class RefreshPanel extends JPanel implements
 	public RefreshPanel() {
 		super();
 
+		this.panelDescription = "Refresh Access Token";
+		this.ID = "refreshtoken";
+		
 		OAuthPropertyBean.getInstance().addChangeListener(this);
 		
 		SpringLayout layout = new SpringLayout();
@@ -78,17 +84,18 @@ public class RefreshPanel extends JPanel implements
 		layout.putConstraint(SpringLayout.WEST, tf_accessToken, 5, SpringLayout.WEST,	this);
 		layout.putConstraint(SpringLayout.NORTH, tf_accessToken, 3, SpringLayout.SOUTH, l_accessToken);
 				
-		layout.putConstraint(SpringLayout.WEST, b_refreshToken, 5, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.EAST, b_refreshToken, 0, SpringLayout.EAST, tf_accessToken);
 		layout.putConstraint(SpringLayout.NORTH, b_refreshToken, 20, SpringLayout.SOUTH, tf_accessToken);
 		
 	}
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		String newValue = (String)evt.getNewValue();
+
 		if ( evt.getPropertyName().compareTo(OAuthPropertyBean.ACCESS_TOKEN) == 0) {
 			tf_accessToken.setText((String)evt.getNewValue());
 		}else if( evt.getPropertyName().compareTo(OAuthPropertyBean.REFRESH_TOKEN) == 0) {
+			String newValue = (String)evt.getNewValue();
 			if( newValue.compareTo(tf_refreshToken.getText()) != 0) tf_refreshToken.setText((String)evt.getNewValue());			
 		}
 	}
@@ -96,14 +103,10 @@ public class RefreshPanel extends JPanel implements
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		if ( ae.getActionCommand().compareTo("Refresh Access Token") == 0) {
-			AccessTokenSwingClient tokenClient = new AccessTokenSwingClient(AccessTokenSwingClient.REFRESH_TOKEN);
-			tokenClient.client_key = OAuthPropertyBean.getInstance().getClientId();
-			tokenClient.client_secret = OAuthPropertyBean.getInstance().getClientSecret();
-			tokenClient.refreshToken = tf_refreshToken.getText();
+			AccessTokenSwingClient tokenClient = new AccessTokenSwingClient(OAuthPropertyBean.REFRESH_GRANT);
 			// The Token URL is generated using the same server and port as the authorization server
 			String tokenServerURL = "https://" + OAuthPropertyBean.getInstance().getAzHost() + ":" + 
 					OAuthPropertyBean.getInstance().getAzPort() + tf_accessTokenUri.getText();
-			tokenClient.url = OAuthPropertyBean.getInstance().getAccessURL();
 			tokenClient.execute();
 			//tokenProgressBar.setVisible(true);
 			//tokenProgressBar.setIndeterminate(true);

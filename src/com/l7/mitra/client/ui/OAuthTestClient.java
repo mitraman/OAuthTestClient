@@ -9,22 +9,33 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
@@ -32,9 +43,30 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.l7.mitra.client.oauth.CallBackServer;
+import com.l7.mitra.client.oauth.CallBackServerManager;
+import com.l7.mitra.client.ui.dialogs.SettingsDialog;
+import com.l7.mitra.client.ui.panels.AccessPanel;
+import com.l7.mitra.client.ui.panels.AuthorizationPanel;
+import com.l7.mitra.client.ui.panels.ClientSettingsPanel;
+import com.l7.mitra.client.ui.panels.OAuthTestPanel;
+import com.l7.mitra.client.ui.panels.RefreshPanel;
+import com.l7.mitra.client.ui.panels.RequestPanel;
+import com.l7.mitra.client.ui.panels.ServerSettingsPanel;
 
 public class OAuthTestClient extends  JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, MessageListener {
 
+	JFrame applicationFrame;
+	
+	
+	private static final String[] grantTypes = {"Authorization Code Grant", "Resource Owner Password Credentials Grant", "Client Credentials Grant"};
+	private static final int AUTHORIZATION_GRANT_INDEX = 0;
+	private static final int IMPLICIT_GRANT_INDEX = 5;
+	private static final int PASSWORD_GRANT_INDEX = 1;
+	private static final int CLIENT_GRANT_INDEX = 2;
+	
+	
+	
+	
 	//TODO: Allow the user to see the raw callback request
 	String grantUrl = "";
 	String accessTokenUrl = "";
@@ -46,6 +78,7 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
 	
 	// List Boxes:
 	JList list_steps;
+	GrantStepsListModel listmodel_steps = new GrantStepsListModel();
 	
 	// Text Labels:
 	JLabel l_status = new JLabel("Status Messages:");
@@ -57,63 +90,86 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
 	
 	// Panels
 	JPanel p_inputCards;
-	final static String SERVER_SETTINGS_PANEL = "serversettings";
-	final static String CLIENT_SETTINGS_PANEL = "clientsettings";
-	final static String AUTHORIZE_PANEL = "authorize";
-	final static String ACCESS_PANEL = "access";
-	final static String REQUEST_PANEL = "request";
-	final static String REFRESH_PANEL = "refresh";
-	JPanel p_serverSettings = new ServerSettingsPanel();
-	JPanel p_clientSettings = new ClientSettingsPanel();
-	JPanel p_authorize = new AuthorizationPanel();	
-	JPanel p_access = new AccessPanel();
-	JPanel p_refresh = new RefreshPanel();
-	JPanel p_request = new RequestPanel();
 	
 	// TODO: Add example images to help with OAuth flow education
 	JPanel p_exampleAnim = new JPanel();
-	
-	
 
-	public OAuthTestClient() {
+	
+	// Top Menu
+	JMenuBar menuBar = new JMenuBar();
+	
+	// Static strings
+	final static String SETTINGS_MENUITEM = "Edit Settings...";
+	final static String LOAD_CONFIG_MENUITEM = "Load Properties...";
+	final static String SAVE_CONFIG_MENUITEM = "Save Properties...";		
+	final static String REST_CONFIG_MENUITEM = "Reset Properties";
+	final static String FILE_MENU = "File";
+	final static String HELP_MENU = "Help";
+	final static String ABOUT_MENUITEM = "About";
+
+	public OAuthTestClient(JFrame applicationFrame) {
 		super();
+		
+		this.applicationFrame = applicationFrame;
 		
         // Setup message event listener for status messages
         MessageLog.getInstance().addListener(this);
         		
 		// Start the call back server
-		try {
-			CallBackServer callBackServer = new CallBackServer(8080);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		CallBackServerManager callBackServerManager = new CallBackServerManager();
+		// TODO: the starting port should be read from a config file.
+		OAuthPropertyBean.getInstance().setServerPort("8080");
+		
 
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 		setPreferredSize(new Dimension(650, 800));
 		
 		OAuthPropertyBean.getInstance().addChangeListener(this);
+		
+		// Setup the top menubar
+		JMenu fileMenu = new JMenu(FILE_MENU);	
+		fileMenu.setMnemonic('F');
+		JMenuItem saveMenuItem = new JMenuItem(SAVE_CONFIG_MENUITEM, KeyEvent.VK_S);
+		saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		saveMenuItem.addActionListener(this);
+		saveMenuItem.setMnemonic('S');
+		fileMenu.add(saveMenuItem);
+		JMenuItem loadMenuItem = new JMenuItem(LOAD_CONFIG_MENUITEM, KeyEvent.VK_L);
+		loadMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK));
+		loadMenuItem.addActionListener(this);
+		fileMenu.add(loadMenuItem);
+		JMenuItem settingsMenuItem = new JMenuItem(SETTINGS_MENUITEM, KeyEvent.VK_E);
+		settingsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK));
+		settingsMenuItem.addActionListener(this);
+		fileMenu.add(settingsMenuItem);
+		menuBar.add(fileMenu);
+		
+		JMenu helpMenu = new JMenu(HELP_MENU);
+		JMenuItem aboutMenuItem = new JMenuItem(ABOUT_MENUITEM);
+		aboutMenuItem.addActionListener(this);
+		helpMenu.add(aboutMenuItem);
+		menuBar.add(helpMenu);
+		
+		applicationFrame.setJMenuBar(menuBar);
+		
 
 		// Setup the grant type chooser
-		String[] grantTypes = {"Authorization Grant"};
+		
 		combo_grantType = new JComboBox(grantTypes);
-		//combo_grantType.addActionListener(this);		
+		combo_grantType.addActionListener(this);		
 		
 		// Set up url chooser
 		String[] urlStrings = {"Grant URL", "Access Token URL", "Request URL"};
 		combo_url = new JComboBox(urlStrings);
 		combo_url.addActionListener(this);
-
-		// Set up step list
-		String[] stepStrings = { "1.  Authorization Server Settings", "2.  Client Application Settings", "3.  Retrieve Authorization Grant", "4.  Retrieve Access Token",
-		"5.  Refresh Access Token", "6.  Send Request" };
-
-		list_steps = new JList(stepStrings);
+		
+		list_steps = new JList(listmodel_steps);
 		list_steps.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		list_steps.setLayoutOrientation(JList.VERTICAL);
 		list_steps.setVisibleRowCount(8);
-		list_steps.setSelectedIndex(0);		
+		list_steps.setSelectedIndex(0);
+		OAuthPropertyBean.getInstance().setGrantType(OAuthPropertyBean.AUTHORIZATION_GRANT);
 		JScrollPane listScroller = new JScrollPane(list_steps);
 		listScroller.setPreferredSize(new Dimension(250, 400));
 		list_steps.addListSelectionListener(this);		
@@ -138,13 +194,8 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
 		
 		// Setup the input panel as a CardLayout so we can switch on the fly
 		p_inputCards = new JPanel(new CardLayout());
-		p_inputCards.add(p_serverSettings, SERVER_SETTINGS_PANEL);
-		p_inputCards.add(p_clientSettings, CLIENT_SETTINGS_PANEL);
-		p_inputCards.add(p_authorize, AUTHORIZE_PANEL);
-		p_inputCards.add(p_access, ACCESS_PANEL);	
-		p_inputCards.add(p_refresh, REFRESH_PANEL);
-		p_inputCards.add(p_request, REQUEST_PANEL);
-				
+		setupPanels();
+						
 		add(combo_grantType);
 		add(listScroller);
 		add(p_exampleAnim);
@@ -160,7 +211,7 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
         layout.putConstraint(SpringLayout.NORTH, combo_grantType, 20, SpringLayout.NORTH, this);
         
 		layout.putConstraint(SpringLayout.WEST, listScroller, 10, SpringLayout.WEST, this);
-        layout.putConstraint(SpringLayout.NORTH, listScroller, 5, SpringLayout.SOUTH, combo_grantType);
+        layout.putConstraint(SpringLayout.NORTH, listScroller, 15, SpringLayout.SOUTH, combo_grantType);
         
         layout.putConstraint(SpringLayout.WEST, p_exampleAnim, 10, SpringLayout.WEST, this);
         layout.putConstraint(SpringLayout.NORTH, p_exampleAnim, 5, SpringLayout.SOUTH, listScroller);
@@ -183,66 +234,77 @@ public class OAuthTestClient extends  JPanel implements ActionListener, ListSele
 
 	}
 	
-	// List Event Handlers:
-	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		if( ae.getActionCommand().compareTo("comboBoxChanged") == 0) {
-			loadUrlData();			
-		}		
+		if( ae.getActionCommand().compareTo("comboBoxChanged") == 0) {				
+			if( ae.getSource() == combo_url) {
+				// The user has selected a URL from the URL dropdown viewer
+				loadUrlData();
+			}else if( ae.getSource() == combo_grantType) {
+				// The OAuth grant type has been changed.
+				if( combo_grantType.getSelectedIndex() == AUTHORIZATION_GRANT_INDEX) {
+					OAuthPropertyBean.getInstance().setGrantType(OAuthPropertyBean.AUTHORIZATION_GRANT);
+					setupPanels();										
+				}else if(combo_grantType.getSelectedIndex() == PASSWORD_GRANT_INDEX) {
+					OAuthPropertyBean.getInstance().setGrantType(OAuthPropertyBean.PASWORD_GRANT);
+					setupPanels();
+				}else if( combo_grantType.getSelectedIndex() == CLIENT_GRANT_INDEX) {
+					OAuthPropertyBean.getInstance().setGrantType(OAuthPropertyBean.CLIENT_CREDENTIALS_GRANT);
+					setupPanels();
+				}
+
+			}
+		}else if( ae.getActionCommand().compareTo(ABOUT_MENUITEM) == 0) {
+			JOptionPane.showMessageDialog(applicationFrame,
+				    "OAuthTestClient\nAn OAuth 2.0 Test Application\nWritten by Ronnie Mitra.\n\nhttps://github.com/mitraman/OAuthTestClient    \n\n",
+				    "About OAuthTestClient",
+				    JOptionPane.QUESTION_MESSAGE);
+		}else if( ae.getActionCommand().compareTo(SETTINGS_MENUITEM) == 0) {
+			SettingsDialog settingsDialog = new SettingsDialog(applicationFrame);
+			settingsDialog.setVisible(true);
+		}else if( ae.getActionCommand().compareTo(SAVE_CONFIG_MENUITEM) == 0) {
+			// TODO: set a default file name
+			JFileChooser fileChooser = new JFileChooser("./OAuthTestClient.cfg");
+			if( fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION ) {
+				File file = fileChooser.getSelectedFile();
+				ConfigManager.saveProperties(file);
+			}
+			
+		}else if( ae.getActionCommand().compareTo(LOAD_CONFIG_MENUITEM) == 0 ) {
+			JFileChooser fileChooser = new JFileChooser();			
+			if( fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+				File file = fileChooser.getSelectedFile();
+				ConfigManager.loadProperties(file);
+			}
+		}
+		else {
+			System.out.println(ae.getActionCommand() + "," + ae.getID());
+		}
+		
 	}
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		int index = list_steps.getSelectedIndex();
-		if( index == 0 ) {
-			// Load the authorization grant frame
-			CardLayout cl = (CardLayout)(p_inputCards.getLayout());
-	        cl.show(p_inputCards, SERVER_SETTINGS_PANEL);
-	        
-	        // Setup up server response area
-	        //l_serverUrl.setText(p_authorize.url_label);
-	        //l_serverResponse.setText(p_authorize.server_label);
-	        
-	        // TODO: Load last url and response from pane.
-			
-		}else if( index == 1 ) {
-			// Load the client settings frame
-			CardLayout cl = (CardLayout)(p_inputCards.getLayout());
-	        cl.show(p_inputCards, CLIENT_SETTINGS_PANEL);
-
-		}else if( index == 2) {
-			CardLayout cl = (CardLayout)(p_inputCards.getLayout());
-	        cl.show(p_inputCards, AUTHORIZE_PANEL);
-		}else if( index == 3) {
-			CardLayout cl = (CardLayout)(p_inputCards.getLayout());
-	        cl.show(p_inputCards, ACCESS_PANEL);	        
-		}else if( index == 4) {
-			CardLayout cl = (CardLayout)(p_inputCards.getLayout());
-	        cl.show(p_inputCards, REFRESH_PANEL);
-		}else if( index == 5 ) {
-			CardLayout cl = (CardLayout)(p_inputCards.getLayout());
-	        cl.show(p_inputCards, REQUEST_PANEL);
-		}
-		
+		int index = list_steps.getSelectedIndex();		
+		CardLayout cl = (CardLayout)(p_inputCards.getLayout());
+        cl.show(p_inputCards, listmodel_steps.getPanel(index).ID);
 	}
 	
 	public void updateServerUrl(String url) {
 		ta_serverUrl.setText(url);
 	}
 
-
-	
 	private static void createAndShowGUI() {
         //Create and set up the window.
         JFrame frame = new JFrame("OAuthTestClient");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
  
-        frame.getContentPane().add(new OAuthTestClient());
+        frame.getContentPane().add(new OAuthTestClient(frame));
  
         //Display the window.
         frame.pack();
         frame.setVisible(true);
+        
     }
  
  
@@ -295,6 +357,15 @@ private void loadUrlData() {
 		ta_serverUrl.setText(OAuthPropertyBean.getInstance().getAccessURL());
 	}else if( urlSelection == 2) {
 		ta_serverUrl.setText(OAuthPropertyBean.getInstance().getRequestURL());
+	}
+}
+
+// utility method to setup card object with panels depending on list model
+private void setupPanels() {
+	p_inputCards.removeAll();					
+	for( int i = 0; i < listmodel_steps.getSize(); i++ ) {
+		OAuthTestPanel panel = listmodel_steps.getPanel(i);
+		p_inputCards.add(panel, panel.ID);
 	}
 }
 

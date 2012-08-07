@@ -67,26 +67,39 @@ public class AccessTokenClient  {
 		});
 
 	}
-	public String refreshAccessToken(String url, String client_key, String client_secret, String refreshToken, String redirect_uri) throws IOException {
+	public String refreshAccessToken(String url, String client_key, String client_secret, String refreshToken, String redirect_uri, String scope) throws IOException {
 		
 		String urlParams = "grant_type=refresh_token&refresh_token=" + URLEncoder.encode(refreshToken, "UTF-8") +
 		        "&redirect_uri=" + URLEncoder.encode(redirect_uri, "UTF-8");
 		return call(url, client_key, client_secret, urlParams, true);
 	}
 	
-	public String getAccessToken(String url, String client_key, String client_secret, String authorizationCode, String redirect_uri) throws IOException {
-		
+	public String getAccessTokenByAuthorizationGrant(String url, String clientKey, String clientSecret, String authorizationCode, String redirectUri, String scope) throws IOException{
 		String urlParams = "grant_type=authorization_code&code=" + URLEncoder.encode(authorizationCode, "UTF-8") +
-		        "&redirect_uri=" + URLEncoder.encode(redirect_uri, "UTF-8");
-		return call(url, client_key, client_secret, urlParams, true);
+		        "&redirect_uri=" + URLEncoder.encode(redirectUri, "UTF-8");
+		if( scope != null && scope.trim().length() > 0) {
+			urlParams = urlParams.concat("&scope=" + URLEncoder.encode(scope, "UTF-8"));
+		}
+		return call(url, clientKey, clientSecret, urlParams, true);
 	}
 	
-public String getAccessToken(String url, String client_key, String authorizationCode, String redirect_uri) throws IOException {
-		
-		String urlParams = "grant_type=authorization_code&code=" + URLEncoder.encode(authorizationCode, "UTF-8") +
-		        "&redirect_uri=" + URLEncoder.encode(redirect_uri, "UTF-8");
-		return call(url, client_key, null, urlParams, false);
+	public String getAccessTokenByResourceCreds(String url, String clientKey, String clientSecret, String userName, String password, String scope) throws IOException{
+		String urlParams = "grant_type=password&username=" + URLEncoder.encode(userName, "UTF-8") +
+		        "&password=" + URLEncoder.encode(password, "UTF-8");
+		if( scope != null && scope.trim().length() > 0) {
+			urlParams = urlParams.concat("&scope=" + URLEncoder.encode(scope, "UTF-8"));
+		}
+		return call(url, clientKey, clientSecret, urlParams, true);
 	}
+	
+	public String getAccessTokenByClientCreds(String url,String clientKey, String clientSecret, String scope) throws IOException {
+		String urlParams = "grant_type=client_credentials";
+		if( scope != null && scope.trim().length() > 0) {
+			urlParams = urlParams.concat("&scope=" + URLEncoder.encode(scope, "UTF-8"));
+		}
+		return call(url, clientKey, clientSecret, urlParams, true);
+	}
+		
 	
 	private String call(String url, String client_key, String client_secret, String urlParams, boolean confidential) throws IOException {
 		
@@ -134,23 +147,7 @@ public String getAccessToken(String url, String client_key, String authorization
 	      
 	      
 	}
-	
-	public static void main(String args[]) {
-		String client_key = "73fee98f-5341-463d-968e-c553f26375cd";
-		String client_secret = "4d3a675e-7445-4329-a08a-c51bb636bed2";	
-		String redirect_uri = "http://localhost:8080/callback";
-		String authorizationCode = "48baa318-1d0c-45de-bf51-3d52366f14fc";
-		String url = "https://192.168.44.129:8443/auth/oauth/v2/token";
-		
-		AccessTokenClient tokenClient = new AccessTokenClient();
-		try {
-			String response = tokenClient.getAccessToken(url, client_key, client_secret, authorizationCode, redirect_uri);
-			System.out.println(response);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
-	}
+	
 
 }

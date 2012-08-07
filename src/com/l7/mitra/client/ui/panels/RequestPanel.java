@@ -1,4 +1,4 @@
-package com.l7.mitra.client.ui;
+package com.l7.mitra.client.ui.panels;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,7 +15,10 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class RequestPanel extends JPanel implements
+import com.l7.mitra.client.ui.OAuthPropertyBean;
+import com.l7.mitra.client.ui.ProtectedResourceSwingClient;
+
+public class RequestPanel extends OAuthTestPanel implements
 		PropertyChangeListener, DocumentListener, ActionListener {
 
 	// Labels
@@ -34,6 +37,9 @@ public class RequestPanel extends JPanel implements
 	public RequestPanel() {
 		super();
 
+		this.panelDescription = "Send Request";
+		this.ID = "request";
+		
 		OAuthPropertyBean.getInstance().addChangeListener(this);
 		
 		SpringLayout layout = new SpringLayout();
@@ -44,6 +50,7 @@ public class RequestPanel extends JPanel implements
 		tf_requestURL = new JTextField(25);
 		tf_requestURL.getDocument().addDocumentListener(this);
 		tf_accessToken = new JTextField(25);
+		tf_accessToken.getDocument().addDocumentListener(this);
 		tf_refreshToken = new JTextField(25);
 
 		// Add components

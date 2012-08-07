@@ -1,4 +1,4 @@
-package com.l7.mitra.client.ui;
+package com.l7.mitra.client.ui.panels;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -17,18 +17,20 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.l7.mitra.client.ui.OAuthPropertyBean;
 
-public class AuthorizationPanel extends JPanel implements DocumentListener, ActionListener, PropertyChangeListener {
+
+public class AuthorizationPanel extends OAuthTestPanel implements DocumentListener, ActionListener, PropertyChangeListener {
 	
 	String url;
 	String callBackMessage;
-
 	
 	// Text Fields
 	JTextField tf_uri;
 	JTextField tf_state;
 	JTextField tf_redirectUri;
 	JTextField tf_azCode;	
+	JTextField tf_scope;
 	
 	// Labels
 	JLabel l_uri = new JLabel("Authorization Endpoint URI: ");
@@ -36,14 +38,15 @@ public class AuthorizationPanel extends JPanel implements DocumentListener, Acti
 	JLabel l_redirect = new JLabel("Redirect URI: ");
 	JLabel l_azCode = new JLabel("Authorization Code: ");
 	JLabel l_state = new JLabel("State: ");
+	JLabel l_scope = new JLabel("Scope: ");
 	
 	// Buttons
-	JButton b_authorize = new JButton("Authorize");
+	JButton b_authorize = new JButton("Authorize...");
 	
 	public AuthorizationPanel() {
-
-		
 		super();
+		this.panelDescription = "Authorization Grant";
+		this.ID = "authorization";
 		
 		OAuthPropertyBean.getInstance().addChangeListener(this);
 		
@@ -62,7 +65,10 @@ public class AuthorizationPanel extends JPanel implements DocumentListener, Acti
         tf_redirectUri.getDocument().addDocumentListener(this);
         tf_state = new JTextField(25);
         tf_state.getDocument().addDocumentListener(this);
-        tf_state.setText("OAuthTest");
+        tf_state.setText("");
+        tf_scope = new JTextField(25);
+        tf_scope.setText("");
+        tf_scope.getDocument().addDocumentListener(this);
         
 		// Add components
         add(l_uri);
@@ -74,6 +80,8 @@ public class AuthorizationPanel extends JPanel implements DocumentListener, Acti
         add(b_authorize);
         add(l_azCode);
         add(tf_azCode);
+        add(l_scope);
+        add(tf_scope);
         
         // Add button listener
         b_authorize.addActionListener(this);
@@ -98,9 +106,15 @@ public class AuthorizationPanel extends JPanel implements DocumentListener, Acti
         layout.putConstraint(SpringLayout.WEST, tf_state, 5, SpringLayout.WEST, this);
         layout.putConstraint(SpringLayout.NORTH, tf_state, 3, SpringLayout.SOUTH, l_state);
         
+        // scope
+        layout.putConstraint(SpringLayout.WEST, l_scope, 5, SpringLayout.WEST, this);
+        layout.putConstraint(SpringLayout.NORTH, l_scope, 17, SpringLayout.SOUTH, tf_state);       
+        layout.putConstraint(SpringLayout.WEST, tf_scope, 5, SpringLayout.WEST, this);
+        layout.putConstraint(SpringLayout.NORTH, tf_scope, 3, SpringLayout.SOUTH, l_scope);
+        
         // authorize button
-        layout.putConstraint(SpringLayout.EAST, b_authorize, 0, SpringLayout.EAST, tf_state);
-        layout.putConstraint(SpringLayout.NORTH, b_authorize, 35, SpringLayout.SOUTH, tf_state);
+        layout.putConstraint(SpringLayout.EAST, b_authorize, 0, SpringLayout.EAST, tf_scope);
+        layout.putConstraint(SpringLayout.NORTH, b_authorize, 35, SpringLayout.SOUTH, tf_scope);
         
         // read only authorization code
         layout.putConstraint(SpringLayout.WEST, l_azCode, 5, SpringLayout.WEST, this);
@@ -139,11 +153,12 @@ public class AuthorizationPanel extends JPanel implements DocumentListener, Acti
 		pBean.setAzUri(tf_uri.getText());
 		pBean.setRedirectUri(tf_redirectUri.getText());
 		pBean.setState(tf_state.getText());
+		pBean.setScope(tf_scope.getText());
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		if( ae.getActionCommand().compareTo("Authorize") == 0 ) {
+		if( ae.getActionCommand().compareTo(b_authorize.getText()) == 0 ) {
 			java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
 			 if( !desktop.isSupported( java.awt.Desktop.Action.BROWSE ) ) {
 		            System.err.println( "Desktop doesn't support the browse action (fatal)" );
@@ -169,6 +184,18 @@ public class AuthorizationPanel extends JPanel implements DocumentListener, Acti
 	public void propertyChange(PropertyChangeEvent evt) {
 		if( evt.getPropertyName().compareTo(OAuthPropertyBean.AUTHORIZATION_CODE) == 0) {
 			tf_azCode.setText(OAuthPropertyBean.getInstance().getAuthorizationCode());
+		}else if( evt.getPropertyName().compareTo(OAuthPropertyBean.AZ_URI) == 0) {
+			if( ((String)evt.getNewValue()).compareTo(tf_uri.getText()) != 0) {
+				tf_uri.setText((String)evt.getNewValue());
+			}
+		}else if( evt.getPropertyName().compareTo(OAuthPropertyBean.STATE) == 0) {
+			if( ((String)evt.getNewValue()).compareTo(tf_state.getText()) != 0) {
+				tf_state.setText((String)evt.getNewValue());
+			}
+		}else if( evt.getPropertyName().compareTo(OAuthPropertyBean.SCOPE) == 0) {
+			if( ((String)evt.getNewValue()).compareTo(tf_scope.getText()) != 0) {
+				tf_scope.setText((String)evt.getNewValue());
+			}
 		}
 		
 	}

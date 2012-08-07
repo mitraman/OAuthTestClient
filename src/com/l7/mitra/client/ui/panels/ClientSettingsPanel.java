@@ -1,4 +1,4 @@
-package com.l7.mitra.client.ui;
+package com.l7.mitra.client.ui.panels;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,10 +15,12 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.l7.mitra.client.ui.OAuthPropertyBean;
 
-public class ClientSettingsPanel extends JPanel implements
+
+public class ClientSettingsPanel extends OAuthTestPanel implements
 		PropertyChangeListener, DocumentListener, ActionListener {
-	
+		
 	// Labels
 	JLabel l_clientId = new JLabel("Client ID: ");
 	JLabel l_clientSecret = new JLabel("Client Secret: ");
@@ -30,6 +32,9 @@ public class ClientSettingsPanel extends JPanel implements
 	public ClientSettingsPanel() {
 		super();
 
+		this.panelDescription = "Client Settings";
+		this.ID = "clientsettings";
+		
 		OAuthPropertyBean.getInstance().addChangeListener(this);
 		
 		SpringLayout layout = new SpringLayout();
@@ -63,13 +68,16 @@ public class ClientSettingsPanel extends JPanel implements
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-//		if (evt.getPropertyName().compareTo(
-//				OAuthPropertyBean.CLIENT_ID) == 0) {
-//			tf_clientId.setText(OAuthPropertyBean.getInstance()
-//					.getClientId());
-//		}else if( evt.getPropertyName().compareTo(OAuthPropertyBean.CLIENT_SECRET) == 0) {
-//			tf_clientSecret.setText(OAuthPropertyBean.getInstance().getClientSecret());
-//		}
+		if( evt.getPropertyName().compareTo(OAuthPropertyBean.CLIENT_ID) == 0) {
+			if( ((String)evt.getNewValue()).compareTo(tf_clientId.getText()) != 0) {
+				tf_clientId.setText((String)evt.getNewValue());
+			}
+		}else if( evt.getPropertyName().compareTo(OAuthPropertyBean.CLIENT_SECRET) == 0) {
+			if( ((String)evt.getNewValue()).compareTo(tf_clientSecret.getText()) != 0) {
+				tf_clientSecret.setText((String)evt.getNewValue());
+			}
+		}
+//		
 
 	}
 

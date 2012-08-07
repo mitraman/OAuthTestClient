@@ -1,4 +1,4 @@
-package com.l7.mitra.client.ui;
+package com.l7.mitra.client.ui.panels;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,8 +15,11 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.l7.mitra.client.ui.AccessTokenSwingClient;
+import com.l7.mitra.client.ui.OAuthPropertyBean;
 
-public class AccessPanel extends JPanel implements
+
+public class AccessPanel extends OAuthTestPanel implements
 		PropertyChangeListener, DocumentListener, ActionListener {
 
 	// Labels
@@ -38,6 +41,9 @@ public class AccessPanel extends JPanel implements
 	public AccessPanel() {
 		super();
 
+		this.panelDescription = "Request Access Token";
+		this.ID = "access";
+		
 		OAuthPropertyBean.getInstance().addChangeListener(this);
 		
 		SpringLayout layout = new SpringLayout();
@@ -115,16 +121,11 @@ public class AccessPanel extends JPanel implements
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		if ( ae.getActionCommand().compareTo("Retrieve Access Token") == 0) {
-			AccessTokenSwingClient tokenClient = new AccessTokenSwingClient(AccessTokenSwingClient.ACCESS_TOKEN);
-			tokenClient.authorizationCode = OAuthPropertyBean.getInstance().getAuthorizationCode();
-			tokenClient.client_key = OAuthPropertyBean.getInstance().getClientId();
-			tokenClient.client_secret = OAuthPropertyBean.getInstance().getClientSecret();
-			tokenClient.redirect_uri = OAuthPropertyBean.getInstance().getRedirectUri();
+			// TODO: Figure out what kind of grant type this is and create the appropriate access client
+			AccessTokenSwingClient tokenClient = new AccessTokenSwingClient();
 			// The Token URL is generated using the same server and port as the authorization server
 			String tokenServerURL = "https://" + OAuthPropertyBean.getInstance().getAzHost() + ":" + 
-					OAuthPropertyBean.getInstance().getAzPort() + tf_accessTokenUri.getText();
-			System.out.println(tokenServerURL);
-			tokenClient.url = OAuthPropertyBean.getInstance().getAccessURL();
+					OAuthPropertyBean.getInstance().getAzPort() + tf_accessTokenUri.getText();			
 			tokenClient.execute();
 			//tokenProgressBar.setVisible(true);
 			//tokenProgressBar.setIndeterminate(true);
