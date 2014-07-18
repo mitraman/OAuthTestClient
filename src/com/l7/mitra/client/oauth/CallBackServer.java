@@ -52,7 +52,7 @@ public class CallBackServer extends NanoHTTPD  {
 			String state = parms.getProperty("state");
 			String scope = parms.getProperty("scope");
 			String code = parms.getProperty("code");
-			if( state.compareTo(OAuthPropertyBean.getInstance().getState()) != 0) {
+			if( state != null &&  state.compareTo(OAuthPropertyBean.getInstance().getState()) != 0) {
 				MessageLog.getInstance().addMessage("*** WARNING: Authorization response state field mismatch.  This may be a CSRF attack! ***" );
 			}
 			OAuthPropertyBean.getInstance().setAuthorizationCode(code);
